@@ -1,0 +1,469 @@
+#include "infiSTAR_AdminMenu.hpp"
+onLoadName = "King Of The Hill";
+author = "Altis Army - heavily modified by AFC";
+onLoadMission = "AFC~King of the Hill - Altis~";
+loadScreen = "images\loadingscreen.jpg";
+onLoadIntroTime = 0;
+onLoadMissionTime = 0;
+enableDebugConsole = 1;
+
+briefing = 0; //script
+
+class Header
+{
+	gameType = KOTH;
+	minPlayers = 1;
+	maxPlayers = 90;
+};
+
+respawn = "BASE";
+respawndelay = 25;
+respawndialog = 0;
+
+joinUnassigned = 0;
+disabledAI = 1;
+disableChannels[]={0,2};
+saving = 0;
+
+corpseLimit = 5;
+corpseRemovalMinTime = 30;
+corpseRemovalMaxTime = 60;
+
+wreckLimit = 5;
+wreckRemovalMinTime = 30;
+wreckRemovalMaxTime = 60;
+forceRotorLibSimulation = 0;
+
+#include "Dialog\Common.hpp"
+#include "Dialog\AFC_gui_weap.hpp"
+#include "Dialog\AFC_gui_veh.hpp"
+
+
+class CfgDebriefing
+{  
+	class End1
+	{
+		title = "Round is over";
+		subtitle = "";
+		description = "Team Blue has taken over the Objective and is now King of the Hill!";
+		pictureBackground = "images\koth.jpg";
+		picture = "";
+		pictureColor[] = {0.0,0.3,0.6,1};
+	};
+	class End2
+	{
+		title = "Round is over";
+		subtitle = "";
+		description = "Team Red has taken over the Objective and is now King of the Hill!";
+		pictureBackground = "images\koth.jpg";
+		picture = "";
+		pictureColor[] = {0.0,0.3,0.6,1};
+	};
+	class End3
+	{
+		title = "Round is over";
+		subtitle = "";
+		description = "Team Green has taken over the Objective and is now King of the Hill!";
+		pictureBackground = "images\koth.jpg";
+		picture = "";
+		pictureColor[] = {0.0,0.3,0.6,1};
+	};
+	class novoice
+	{
+		title = "you have been warned...";
+		subtitle = "";
+		description = "no voice in global channel!";
+		pictureBackground = "";
+		picture = "images\novoice.paa";
+		pictureColor[] = {1.0,1.0,1.0,1};
+	};
+	class unBalancedTeams
+	{
+		title = "Teambalance";
+		subtitle = "";
+		description = "Teams are unbalanced, Please change Team!!!";
+		pictureBackground = "";
+		picture = "";
+		pictureColor[] = {1.0,1.0,1.0,1};
+	};
+};
+
+class CfgFunctions
+{
+	class myTag
+	{
+		class myCategory
+		{
+			class skipBriefing
+			{
+				file = "skipBriefing.sqf";
+				preInit = 1;
+			};
+		};
+	};
+};
+
+class CfgSounds
+{
+    sounds[] = {};
+    class WelcomeSound
+    {
+		name="WelcomeSound";
+		sound[]={sounds\WelcomeSound.ogg,0.9,1};
+		titles[] = {};
+    };
+	class EndSound
+    {
+		name="EndSound";
+		sound[]={sounds\kothend.ogg,0.9,1};
+		titles[] = {};
+    };
+	class AR_Rappel_Loop
+	{
+		name = "AR_Rappel_Loop";
+		sound[] = {"sounds\AR_Rappel_Loop.ogg", db+20, 1};
+		titles[] = {0,""};
+	};
+	class AR_Rappel_Start
+	{
+		name = "AR_Rappel_Start";
+		sound[] = {"sounds\AR_Rappel_Start.ogg", db+20, 1};
+		titles[] = {0,""};
+	};
+	class AR_Rappel_End
+	{
+		name = "AR_Rappel_End";
+		sound[] = {"sounds\AR_Rappel_End.ogg", db+20, 1};
+		titles[] = {0,""};
+	};
+};
+
+class RscPictureTrans
+{
+	type = CT_STATIC;
+	idc = -1;
+	style = 48;
+	colorBackground[] = {0, 0, 0, 0};
+	colorText[] = {1, 1, 1, 0.65};
+	font = "PuristaMedium"; //Typeface
+	sizeEx = 0;
+};
+
+class AFCcfgMain
+{
+    #include "Dialog\AFC_cfg_Traders.hpp"
+};
+
+class RscTitles
+{
+	#include "Dialog\AFC_gui_weap.hpp"
+	#include "Dialog\AFC_gui_veh.hpp"
+	
+	class statsScreen
+	{    
+		idd = -1;
+		duration = 1e+1000;
+		fadeIn = 0;
+		fadeOut = 0;
+		name = "";
+		onLoad = "uiNamespace setVariable ['statsDisplay', _this select 0];";
+		
+		class controls
+		{
+			class statsxp
+			{    
+				idc = 1000;
+				type = 0;
+				style = 0;
+				
+				text = "0";
+				x = 0.85 * safezoneW + safezoneX;
+                y = 0.87 * safezoneH + safezoneY;
+                w = 0.15 * safezoneW;
+                h = 0.04 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.04;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};  
+			class statskills
+			{    
+				idc = 1001;
+				type = 0;
+				style = 0;
+				
+				text = "0";
+				x = 0.85 * safezoneW + safezoneX;
+                y = 0.9 * safezoneH + safezoneY;
+                w = 0.12 * safezoneW;
+                h = 0.04 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.04;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+			class statsblu
+			{    
+				idc = 1002;
+				type = 0;
+				style = 0;
+				
+				text = "0";
+				x = 0.85 * safezoneW + safezoneX;
+                y = 0.94 * safezoneH + safezoneY;
+                w = 0.04 * safezoneW;
+                h = 0.04 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.07;
+				colorBackground[] = {0,0,1,0.5};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+			class statsblucount
+			{    
+				idc = 1005;
+				type = 0;
+				style = 2;
+				
+				text = "0";
+				x = 0.85 * safezoneW + safezoneX;
+				y = 0.98 * safezoneH + safezoneY;
+				w = 0.04 * safezoneW;
+				h = 0.02 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.04;
+				colorBackground[] = {0,0,0,0.2};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+			class playersblue : RscPicture
+			{
+				text="images\player.paa";
+				x = 0.85 * safezoneW + safezoneX;
+                y = 0.98 * safezoneH + safezoneY;
+                w = 0.01 * safezoneW;
+                h = 0.02 * safezoneH;
+			};
+			class statsred
+			{    
+				idc = 1003;
+				type = 0;
+				style = 0;
+				
+				text = "0";
+				x = 0.9 * safezoneW + safezoneX;
+                y = 0.94 * safezoneH + safezoneY;
+                w = 0.04 * safezoneW;
+                h = 0.04 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.07;
+				colorBackground[] = {1,0,0,0.5};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+			class statsredcount
+			{    
+				idc = 1006;
+				type = 0;
+				style = 2;
+				
+				text = "0";
+				x = 0.9 * safezoneW + safezoneX;
+				y = 0.98 * safezoneH + safezoneY;
+				w = 0.04 * safezoneW;
+				h = 0.02 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.04;
+				colorBackground[] = {0,0,0,0.2};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+			class playersred : RscPicture
+			{
+				text="images\player.paa";
+				x = 0.9 * safezoneW + safezoneX;
+                y = 0.98 * safezoneH + safezoneY;
+                w = 0.01 * safezoneW;
+                h = 0.02 * safezoneH;
+			};
+			class statsind
+			{    
+				idc = 1004;
+				type = 0;
+				style = 0;
+				
+				text = "0";
+				x = 0.95 * safezoneW + safezoneX;
+                y = 0.94 * safezoneH + safezoneY;
+                w = 0.04 * safezoneW;
+                h = 0.04 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.07;
+				colorBackground[] = {0,1,0,0.5};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+			class statsindcount
+			{    
+				idc = 1007;
+				type = 0;
+				style = 2;
+				
+				text = "0";
+				x = 0.95 * safezoneW + safezoneX;
+				y = 0.98 * safezoneH + safezoneY;
+				w = 0.04 * safezoneW;
+				h = 0.02 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.04;
+				colorBackground[] = {0,0,0,0.2};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+			class playersind : RscPicture
+			{
+				text="images\player.paa";
+				x = 0.95 * safezoneW + safezoneX;
+                y = 0.98 * safezoneH + safezoneY;
+                w = 0.01 * safezoneW;
+                h = 0.02 * safezoneH;
+			};
+		};
+	};
+	
+	class welcomeScreen
+	{    
+		idd = -1;
+		duration = 20;
+		fadeIn = 2;
+		fadeOut = 2;
+		name = "";
+		onLoad = "";
+		
+		class controls
+		{
+			class logo : RscPicture
+			{
+				text="images\afc_logo.paa";
+				x = 0.2 * safezoneW + safezoneX;
+                y = 0.1 * safezoneH + safezoneY;
+                w = 0.27 * safezoneW;
+                h = 0.12 * safezoneH;
+			};
+			class text
+			{    
+				idc = 900;
+				type = 0;
+				style = 0;
+				
+				text = "Welcome to Austrian-Funclan";
+				x = 0.2 * safezoneW + safezoneX;
+                y = 0.11 * safezoneH + safezoneY;
+                w = 0.8 * safezoneW;
+                h = 0.3 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.08;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};  
+			class text2
+			{    
+				idc = 901;
+				type = 0;
+				style = 0;
+				
+				text = "King of the Hill - Altis";
+				x = 0.2 * safezoneW + safezoneX;
+                y = 0.14 * safezoneH + safezoneY;
+                w = 0.8 * safezoneW;
+                h = 0.3 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.06;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			}; 
+		};
+	};
+	
+	class welcomeScreen2
+	{    
+		idd = -1;
+		duration = 20;
+		fadeIn = 2;
+		fadeOut = 2;
+		name = "";
+		onLoad = "";
+		
+		class controls
+		{
+			class text
+			{    
+				idc = 902;
+				type = 0;
+				style = 528;
+				lineSpacing = 1.1;
+				
+				text = "Serverrules:\nBy playing on this server you agree to these rules\nif you dont like them go and search another server\nNo kamikaze - no voice on global - no excessive shooting in base\nPlay the objective: no baseraping - no teamkilling/damaging/stealing of friendly vehicles\nCamping near the main roads is baseraping! camping the spawntruck is not allowed!\nFollow the rules without discussion - you will only be warned once";
+				
+				x = 0.2 * safezoneW + safezoneX;
+                y = 0.38 * safezoneH + safezoneY;
+                w = 0.5 * safezoneW;
+                h = 0.2 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.04;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+		};
+	};
+	
+	class welcomeScreen3
+	{    
+		idd = -1;
+		duration = 20;
+		fadeIn = 2;
+		fadeOut = 2;
+		name = "";
+		onLoad = "";
+		
+		class controls
+		{
+			class text
+			{    
+				idc = 903;
+				type = 0;
+				style = 528;
+				lineSpacing = 1.1;
+				
+				text = "Objective: capture and hold the Objective with your team\nYou capture the zone if you are inside it\nYou get xp for kills and for staying near the objective\nYour team will capture the zone faster when you are inside the inner (black) area\nThe team with the highest ticket count wins\nBuy weapons and vehicles in your base - use spawntruck to teleport to the frontier (flag in base)\nWhen a new round starts give the server some time to load your rank it can take a moment\nDo NOT save your stats manually when your rank was not loaded correctly or it will be gone for good";
+				
+				x = 0.2 * safezoneW + safezoneX;
+                y = 0.60 * safezoneH + safezoneY;
+                w = 0.5 * safezoneW;
+                h = 0.3 * safezoneH;
+				
+				font = "PuristaMedium";
+				sizeEx = 0.04;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1,1,1,1};
+				shadow = 2;
+			};
+		};
+	};
+};
